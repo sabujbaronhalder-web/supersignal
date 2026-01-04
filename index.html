@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SUPER SIGNAL AI Trading Generator</title> 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-0: #0f1b22;
+      --bg-1: #0b1620;
+      --card: #0d1922;
+      --glow: #1cf2d6;
+      --accent: #6be7ff;
+      --btn: #4ed16f;
+      --btn-hover: #5ce286;
+      --text: #ffffff;
+      --muted: #0aeb37;
+      --signal-text: #ffe95c;
+      --danger: #ff4b4b;
+      --progress: #ff2a7f;
+      --success: #4ade80;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: radial-gradient(60% 100% at 50% 0%, #112734 0%, var(--bg-1) 55%, #0a141b 100%);
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text);
+      padding: 20px;
+    }
+
+    /* Login Screen Styles */
+    #loginOverlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-1);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-card {
+      width: min(400px, 90vw);
+      background: var(--card);
+      padding: 40px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      text-align: center;
+      box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    }
+
+    .login-card h2 { color: var(--accent); margin-bottom: 25px; font-family: 'Orbitron'; }
+
+    .input-group { margin-bottom: 20px; text-align: left; }
+
+    .input-group label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--muted); }
+
+    .login-input {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      color: white;
+      outline: none;
+    }
+
+    /* Main App Styles */
+    .card {
+      display: none; /* Hidden until login */
+      width: min(720px, 92vw);
+      background: linear-gradient(180deg, #0f1e28 0%, var(--card) 100%);
+      border-radius: 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.45);
+      padding: 30px;
+      position: relative;
+    }
+
+    .brand {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 800; 
+      letter-spacing: .2em; 
+      color: var(--accent);
+      font-size: 32px; 
+      text-align: center;
+      margin-bottom: 20px;
+      text-shadow: 0 0 12px rgba(107,231,255,.35);
+    }
+
+    .select {
+      width: 100%; 
+      background: #f0f0f0; 
+      color: #0212f8; 
+      border: 2px solid #3df705; 
+      border-radius: 10px; 
+      padding: 15px; 
+      font-size: 18px;
+      font-family: 'JetBrains Mono';
+      margin: 15px 0;
+    }
+
+    .btn {
+      width: 100%; 
+      padding: 18px; 
+      background: var(--btn); 
+      color: #0b2812; 
+      font-size: 22px; 
+      border: none; 
+      border-radius: 14px; 
+      cursor: pointer;
+      font-family: 'Orbitron';
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .btn:hover { background: var(--btn-hover); transform: scale(1.02); }
+
+    .signal-wrap { margin-top: 25px; }
+
+    .signal {
+      display: none;
+      background: #000;
+      padding: 20px;
+      border-radius: 15px;
+      border: 1px solid var(--accent);
+      text-align: center;
+      color: var(--signal-text);
+    }
+
+    .signal.show { display: block; animation: fadeIn 0.5s; }
+
+    .direction-up { color: var(--success); font-weight: bold; }
+    .direction-down { color: var(--danger); font-weight: bold; }
+
+    .timer { margin-top: 20px; text-align: center; color: var(--accent); }
+
+    .bar {
+      width: 100%; height: 8px; background: rgba(255,255,255,0.1);
+      border-radius: 10px; margin-top: 10px; overflow: hidden;
+    }
+
+    #bar { height: 100%; width: 0%; background: var(--progress); transition: 1s linear; }
+
+    .footer-tg { margin-top: 20px; text-align: center; }
+    .footer-tg a { color: var(--accent); text-decoration: none; font-weight: bold; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+  </style>
+</head>
+<body>
+
+  <div id="loginOverlay">
+    <div class="login-card">
+      <h2>SUPER SIGNAL LOGIN</h2>
+      <div class="input-group">
+        <label>Username</label>
+        <input type="text" id="username" class="login-input" placeholder="Enter username">
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="password" class="login-input" placeholder="Enter password">
+      </div>
+      <button class="btn" onclick="checkLogin()">LOGIN</button>
+      <p id="loginError" style="color: var(--danger); margin-top: 15px; display: none;">Invalid Credentials!</p>
+    </div>
+  </div>
+
+  <main class="card" id="mainApp">
+    <div class="brand">SUPER&nbsp;SIGNAL&nbsp;AI</div>
+
+    <div style="text-align: center; color: var(--muted); margin-bottom: 10px;">Select Market</div>
+    <select class="select" id="market">
+      <option value="USDBRL-OTC">USDBRL-OTC</option>
+      <option value="USDMXN-OTC">USDMXN-OTC</option>
+      <option value="USDINR-OTC">USDINR-OTC</option>
+      <option value="EURUSD-OTC">EURUSD-OTC</option>
+      <option value="GBPUSD-OTC">GBPUSD-OTC</option>
+      <option value="XAUUSD-OTC">XAUUSD-OTC</option>
+      <option value="BTCUSD-OTC">BTCUSD-OTC</option>
+    </select>
+
+    <button class="btn" id="gen">
+      <span id="btnText">Generate Signal</span>
+    </button>
+
+    <div class="signal-wrap">
+      <div class="signal" id="signalBox">
+        <div id="sigText"></div>
+      </div>
+    </div>
+
+    <div class="timer">
+      Next signal in: <b id="count">00:00</b>
+    </div>
+    <div class="bar"><div id="bar"></div></div>
+    
+    <div class="footer-tg">
+      <a href="https://t.me/tradingwithcharlie" target="_blank">
+        TG: @tradingwithcharlie
+      </a>
+    </div>
+  </main>
+
+  <script>
+    // Authentication Logic
+    function checkLogin() {
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      if(u === 'sicko' && p === 'megh') {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+
+    // Signal Generation Logic
+    const pad = n => String(n).padStart(2, '0');
+    
+    function getBangladeshTime() {
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      return new Date(utc + (3600000 * 6));
+    }
+
+    const marketEl = document.getElementById('market');
+    const genBtn = document.getElementById('gen');
+    const btnText = document.getElementById('btnText');
+    const sigBox = document.getElementById('signalBox');
+    const sigText = document.getElementById('sigText');
+    const countEl = document.getElementById('count');
+    const barEl = document.getElementById('bar');
+
+    let remain = 60;
+    let timer = null;
+
+    function startTimer(){
+      clearInterval(timer);
+      remain = 60;
+      timer = setInterval(() => {
+        remain--; 
+        const minutes = Math.floor(remain / 60);
+        const seconds = remain % 60;
+        countEl.textContent = `${pad(minutes)}:${pad(seconds)}`;
+        barEl.style.width = ((60 - remain) / 60 * 100) + '%';
+        
+        if(remain <= 0){ 
+          clearInterval(timer); 
+          genBtn.disabled = false;
+          btnText.textContent = "Generate Signal";
+        }
+      }, 1000);
+    }
+
+    genBtn.addEventListener('click', () => {
+      genBtn.disabled = true;
+      btnText.textContent = "Analyzing...";
+      
+      setTimeout(() => {
+        const dir = Math.random() > 0.5 ? 'UP' : 'DOWN';
+        const asset = marketEl.value;
+        const bdTime = getBangladeshTime();
+        bdTime.setMinutes(bdTime.getMinutes() + 1);
+        
+        sigText.innerHTML = `
+          <div style="font-size: 20px; color: var(--accent); margin-bottom: 10px;">🤖 SUPER SIGNAL 🤖</div>
+          <div style="font-size: 24px; margin: 5px 0;">⇅ ${asset}</div>
+          <div style="margin: 5px 0;">⏰ ${pad(bdTime.getHours())}:${pad(bdTime.getMinutes())} (UTC+6)</div>
+          <div style="margin: 5px 0;">💊 1 MINUTE</div>
+          <div style="font-size: 24px; margin: 10px 0;">📕 GO FOR <span class="${dir === 'UP' ? 'direction-up' : 'direction-down'}">${dir}</span></div>
+          <div style="font-size: 14px; color: #ff4b4b;">❗️ USE MTG 1 IF LOSS ❗️</div>
+          <div style="margin-top: 10px; font-size: 12px; opacity: 0.7;">🧿 SUPER SIGNAL AI 🧿</div>
+        `;
+        sigBox.classList.add('show');
+        startTimer();
+      }, 1500);
+    });
+
+    // Security
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+      if (e.key === "F12" || (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key)) || (e.ctrlKey && e.key === 'u')) {
+        e.preventDefault();
+      }
+    });
+  </script>
+</body>
+</html>
